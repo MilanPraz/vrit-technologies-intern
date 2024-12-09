@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import { ID, TColumn, TTask } from "@/types/types";
 import { randomNoGen } from "@/utils/randomNoGenerator";
 import { arrayMove } from "@dnd-kit/sortable";
@@ -17,6 +23,8 @@ type KanbanContextType = {
   moveTaskSameCol: (activeId: any, overId: any) => void;
   moveTaskDiffCol: (activeId: any, overId: any) => void;
   moveColumn: (fromIndex: number, toIndex: number) => void;
+  moveTask: (taskId: ID, newColumnId: ID) => void;
+
   undo: () => void;
   redo: () => void;
   canUndo: boolean;
@@ -155,6 +163,17 @@ export const KanbanProvider: React.FC<{ children: React.ReactNode }> = ({
     saveState(newColumns, tasks);
   };
 
+  const moveTask = useCallback(
+    (taskId: ID, newColumnId: ID) => {
+      const newTasks = tasks.map((task) =>
+        task.id !== taskId ? task : { ...task, columnId: newColumnId }
+      );
+      setTasks(newTasks);
+      saveState(columns, newTasks);
+    },
+    [columns, tasks, saveState]
+  );
+
   const undo = () => {
     if (historyIndex > 0) {
       setHistoryIndex((prev) => prev - 1);
@@ -187,6 +206,7 @@ export const KanbanProvider: React.FC<{ children: React.ReactNode }> = ({
     moveTaskSameCol,
     moveTaskDiffCol,
     moveColumn,
+    moveTask,
     undo,
     redo,
     canUndo: historyIndex > 0,

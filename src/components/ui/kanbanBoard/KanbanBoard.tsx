@@ -32,12 +32,13 @@ export default function KanbanBoard() {
     updateTask,
     columns,
     tasks,
+    moveTask,
     moveColumn,
     moveTaskDiffCol,
     moveTaskSameCol,
   } = useKanban();
 
-  const columnsId = useMemo(() => columns.map((col) => col.id), [columns]);
+  const columnsId = useMemo(() => columns?.map((col) => col.id), [columns]);
 
   function onDragStart(e: DragStartEvent) {
     if (e.active.data.current?.type === "Column") {
@@ -69,6 +70,32 @@ export default function KanbanBoard() {
     // }
   }
 
+  // function onDragOver(e: DragOverEvent) {
+  //   const { active, over } = e;
+
+  //   if (!over) return;
+  //   const activeId = active.id;
+  //   const overId = over.id;
+
+  //   if (activeId === overId) return;
+  //   //WHEN DROPPING TASK ON SAME COLUMN
+
+  //   const isActiveATask = active.data.current?.type === "Task";
+  //   const isOverATask = over.data.current?.type === "Task";
+
+  //   if (!isActiveATask) return;
+
+  //   if (isActiveATask && isOverATask) {
+  //     moveTaskSameCol(activeId, overId);
+  //   }
+
+  //   //WHEN DROPPING TASK ON ANOTHER COLUMN
+  //   const isOverColumn = over.data.current?.type === "Column";
+
+  //   if (isActiveATask && isOverColumn) {
+  //     moveTaskDiffCol(activeId, overId);
+  //   }
+  // }
   function onDragOver(e: DragOverEvent) {
     const { active, over } = e;
 
@@ -77,22 +104,33 @@ export default function KanbanBoard() {
     const overId = over.id;
 
     if (activeId === overId) return;
-    //WHEN DROPPING TASK ON SAME COLUMN
 
     const isActiveATask = active.data.current?.type === "Task";
     const isOverATask = over.data.current?.type === "Task";
 
     if (!isActiveATask) return;
 
+    // if (isActiveATask && isOverATask) {
+    // }
     if (isActiveATask && isOverATask) {
       moveTaskSameCol(activeId, overId);
+      const activeIndex = tasks.findIndex((t) => t.id === activeId);
+      const overIndex = tasks.findIndex((t) => t.id === overId);
+
+      if (tasks[activeIndex].columnId !== tasks[overIndex].columnId) {
+        moveTask(tasks[activeIndex].id, tasks[overIndex].columnId);
+      }
     }
 
-    //WHEN DROPPING TASK ON ANOTHER COLUMN
     const isOverColumn = over.data.current?.type === "Column";
 
+    // if (isActiveATask && isOverColumn) {
+    // }
     if (isActiveATask && isOverColumn) {
-      moveTaskDiffCol(activeId, overId);
+      // moveTaskDiffCol(activeId, overId);
+      console.log("MOVING?????");
+
+      moveTask(activeId, overId);
     }
   }
 
@@ -119,7 +157,7 @@ export default function KanbanBoard() {
 
           <section className="flex items-center gap-4">
             <SortableContext items={columnsId}>
-              {columns.map((col, idx) => {
+              {columns?.map((col, idx) => {
                 return (
                   <CustomContainer
                     key={idx}
